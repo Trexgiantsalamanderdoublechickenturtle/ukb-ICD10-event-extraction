@@ -1,22 +1,21 @@
 UKB_ICD10_3chr <- function(df, event, icd_prefixes) {
-  df[[event]] <- 0
+  df[[event]] <- 0# Initialize the event indicator as 0
   for (i in 0:258) {
-    icd_col  <- paste0("41270-0.", i)
+    icd_col  <- paste0("41270-0.", i)# Select columns across all array
     date_col <- paste0("41280-0.", i)
     basediseasedate_col <- paste0("basediseasedate.", i) 
-    idx <- substr(df[[icd_col]], 1, 3) %in% icd_prefixes
+    idx <- substr(df[[icd_col]], 1, 3) %in% icd_prefixes# Identify ICD-10 codes that match the specified 3-character prefixes
     
-    df[[event]][idx] <- 1
+    df[[event]][idx] <- 1 # Mark event as 1 when matched
     
-    df[[basediseasedate_col]] <- as.Date(NA)
+    df[[basediseasedate_col]] <- as.Date(NA)#Crate temporary variable to store diagnosis dates
     df[[basediseasedate_col]][idx] <- df[[date_col]][idx]
   }
   
   date_cols <- paste0("basediseasedate.", 0:258)
-  df <- df %>%
-    mutate(
-      !!paste0(event, "date") := do.call(pmin, c(across(all_of(date_cols)), na.rm = TRUE))
-    ) %>% mutate(across(all_of(date_cols), ~ NA)) %>% select(eid,all_of(event), all_of(paste0(event, "date")))
+  df <- df %>%  mutate( !!paste0(event, "date") := do.call(pmin, c(across(all_of(date_cols)), na.rm = TRUE))) #Keep the earliest diagnosis date across all ICD10 codes
+           %>% mutate(across(all_of(date_cols), ~ NA)) #Remove temporary variable
+           %>% select(eid,all_of(event), all_of(paste0(event, "date")))#Keep eid, event, eventdate
   return(df)
 }
 
@@ -26,7 +25,7 @@ UKB_ICD10_exact_search <- function(df, event, icd_prefixes) {
     icd_col  <- paste0("41270-0.", i)
     date_col <- paste0("41280-0.", i)
     basediseasedate_col <- paste0("basediseasedate.", i) 
-    idx <- df[[icd_col]] %in% icd_prefixes
+    idx <- df[[icd_col]] %in% icd_prefixes# Identify ICD-10 codes 
     
     df[[event]][idx] <- 1
     
@@ -48,7 +47,7 @@ UKB_ICD10_cancer <- function(df, event, icd_prefixes) {
     icd_col  <- paste0("41270-0.", i)
     date_col <- paste0("41280-0.", i)
     basediseasedate_col <- paste0("basediseasedate.", i) 
-    idx <- substr(df[[icd_col]], 1, 1) %in% icd_prefixes
+    idx <- substr(df[[icd_col]], 1, 1) %in% icd_prefixes# Identify ICD-10 codes of cancer starting with "C" 
     
     df[[event]][idx] <- 1
     
