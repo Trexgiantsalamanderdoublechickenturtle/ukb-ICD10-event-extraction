@@ -13,9 +13,9 @@ UKB_ICD10_3chr <- function(df, event, icd_prefixes) {
   }
   
   date_cols <- paste0("basediseasedate.", 0:258)
-  df <- df %>%  mutate( !!paste0(event, "date") := do.call(pmin, c(across(all_of(date_cols)), na.rm = TRUE))) #Keep the earliest diagnosis date across all ICD10 codes
-           %>% mutate(across(all_of(date_cols), ~ NA)) #Remove temporary variable
-           %>% select(eid,all_of(event), all_of(paste0(event, "date")))#Keep eid, event, eventdate
+  df <- df %>%  mutate( !!paste0(event, "date") := do.call(pmin, c(across(all_of(date_cols)), na.rm = TRUE))) %>% #Keep the earliest diagnosis date across all ICD10 codes
+                mutate(across(all_of(date_cols), ~ NA)) %>%  #Remove temporary variable
+                select(eid,all_of(event), all_of(paste0(event, "date"))) #Keep eid, event, eventdate
   return(df)
 }
 
